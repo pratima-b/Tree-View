@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimal Pathing</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+
+        header {
+            background-color: #0A5C36;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            height: 80px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .home-button {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: linear-gradient(135deg, #004d00, #0A5C36);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 18px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s, transform 0.3s;
+        }
+
+        .home-button:hover {
+            background: linear-gradient(135deg, #005c00, #0a6b42);
+            transform: scale(1.1);
+        }
+
+        .home-button i {
+            margin: 0;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+        }
+
+        h2, h3, h4 {
+            color: #333;
+            margin: 20px 0;
+        }
+
+        input[type="file"] {
+            display: block;
+            margin: 20px auto;
+        }
+
+        button {
+            background-color: #4CAF50; /* Green */
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px; /* Rounded corners */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+            transition: background 0.3s, transform 0.3s; /* Smooth transitions */
+            margin: 20px auto;
+            display: block;
+        }
+
+        button:hover {
+            background-color: #45a049; /* Slightly darker green on hover */
+            transform: scale(1.05); /* Slightly enlarge on hover */
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+        .image-container img {
+            max-width: calc(50% - 40px);
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #green-cover-percentage, #idle-land-percentage {
+            font-size: 24px;
+            margin: 10px 0;
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="images/plant.png">
+
+</head>
+<body>
+    <header>
+        <h1>Optimal Pathing</h1>
+        <button class="home-button" onclick="window.location.href='index.html'">
+            <i class="fas fa-home"></i>
+        </button>
+    </header>
+
+    <div class="container">
+        <h2>Optimal Pathing</h2>
+        <input type="file" id="image-file" accept="image/*">
+        <button onclick="processImage()">Process Image</button>
+
+        <h3>Processed Image:</h3>
+        <div class="image-container">
+            <img id="uploaded-image" src="" alt="Uploaded Image">
+            <img id="processed-image" src="" alt="Processed Image">
+        </div>
+
+        <h4>Green Cover Percentage: <span id="green-cover-percentage"></span></h4>
+        <h4>Idle Land Percentage: <span id="idle-land-percentage"></span></h4>
+    </div>
+
+    <script>
+        function processImage() {
+            const fileInput = document.getElementById('image-file');
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onloadend = () => {
+                const uploadedImage = document.getElementById('uploaded-image');
+                const processedImage = document.getElementById('processed-image');
+                const greenCoverPercentage = document.getElementById('green-cover-percentage');
+                const idleLandPercentage = document.getElementById('idle-land-percentage');
+
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    ctx.drawImage(img, 0, 0);
+
+                    let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    let blackPixelCount = 0;
+
+                    // Calculate the mean green value
+                    let totalGreen = 0;
+                    for (let i = 1; i < imageData.data.length; i += 4) {
+                        totalGreen += imageData.data[i];
+                    }
+                    const meanGreen = totalGreen / (imageData.data.length / 4);
+
+                    for (let i = 0; i < imageData.data.length; i += 4) {
+                        let gray = (imageData.data[i + 1]) * 0.587; // Keep only green channel
+
+                        if (gray < meanGreen / 1.5) {
+                            gray = 0;
+                            blackPixelCount++;
+                        } else {
+                            gray = 255;
+                        }
+
+                        imageData.data[i] = gray;   // Red channel
+                        imageData.data[i + 1] = gray; // Green channel
+                        imageData.data[i + 2] = gray; // Blue channel
+                        imageData.data[i + 3] = 255;  // Alpha channel
+                    }
+
+                    ctx.putImageData(imageData, 0, 0);
+
+                    // Display the processed image and green cover percentage
+                    processedImage.src = canvas.toDataURL();
+                    greenCoverPercentage.textContent = ((blackPixelCount / (canvas.width * canvas.height)) * 100).toFixed(2) + '%';
+                    idleLandPercentage.textContent = (100 - ((blackPixelCount / (canvas.width * canvas.height)) * 100)).toFixed(2) + '%';
+                };
+                img.src = reader.result;
+
+                // Display the uploaded image
+                uploadedImage.src = reader.result;
+            };
+
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
