@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OPTIMAL PATH FINDER</title>
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+        }
+        .home-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: linear-gradient(135deg, #004d00, #0A5C36);
+            color: white;
+            border: none;
+            padding: 10px;
+            cursor: pointer;
+            border-radius: 50%;
+            font-size: 18px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s, transform 0.3s;
+        }
+        .home-button:hover {
+            background: linear-gradient(135deg, #005c00, #0a6b42);
+            transform: scale(1.1);
+        }
+        .home-button i {
+            margin: 0;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+            margin: 20px 0;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        label {
+            margin-bottom: 10px;
+        }
+        input[type="file"] {
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4CAF50;
+            border: none;
+            color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: background 0.3s, transform 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+        .image-container {
+            display: flex;
+            justify-content: space-around;
+            align-items: flex-start;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .image-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            max-width: 45%;
+        }
+        .image-box img {
+            max-width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        .image-box h2 {
+            color: #333;
+        }
+        .hidden {
+            display: none;
+        }
+        .loading-spinner {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+            margin: 20px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    <link rel="icon" type="image/x-icon" href="images/plant.png">
+</head>
+<body>
+    <header>
+        <h1>OPTIMAL PATH FINDER</h1>
+        <button class="home-button" onclick="window.location.href='/'">
+            <i class="fas fa-home"></i>
+        </button>
+    </header>
+    <div class="container">
+        <form id="upload-form" action="/upload" method="post" enctype="multipart/form-data">
+            <label for="file">Choose an image...</label>
+            <input type="file" id="file" name="file" accept="image/*" required>
+            <button type="submit">Upload</button>
+        </form>
+        <div id="loading-spinner" class="loading-spinner hidden"></div>
+        <div class="image-container hidden" id="before-after-images">
+            <div class="image-box" id="before-pathfinding">
+                <h2>Before Pathfinding</h2>
+                <img id="before-image" src="" alt="Before Pathfinding">
+            </div>
+            <div class="image-box" id="after-pathfinding">
+                <h2>After Pathfinding</h2>
+                <img id="after-image" src="" alt="After Pathfinding">
+            </div>
+        </div>
+    </div>
+    <script>
+        document.getElementById('upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const fileInput = document.getElementById('file');
+            const beforeImage = document.getElementById('before-image');
+            const afterImage = document.getElementById('after-image');
+            const imageContainer = document.getElementById('before-after-images');
+            const loadingSpinner = document.getElementById('loading-spinner');
+            if (fileInput.files && fileInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    beforeImage.src = e.target.result;
+                    loadingSpinner.classList.remove('hidden');
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    fetch('/upload', {
+                        method: 'POST',
+                        body: formData
+                    }).then(response => response.blob()).then(blob => {
+                        const url = URL.createObjectURL(blob);
+                        afterImage.src = url;
+                        imageContainer.classList.remove('hidden');
+                        loadingSpinner.classList.add('hidden');
+                    }).catch(error => {
+                        console.error('Error:', error);
+                        loadingSpinner.classList.add('hidden');
+                    });
+                }
+                reader.readAsDataURL(fileInput.files[0]);
+            }
+        });
+    </script>
+</body>
+</html>
