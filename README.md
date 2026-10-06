@@ -79,7 +79,7 @@ Before running Tree View, make sure you have:
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/pratima-b/Tree-View.git](https://github.com/pratima-b/TreeView-Tree-Enumeration-App.git
+   git clone https://github.com/pratima-b/TreeView-Tree-Enumeration-App.git
    ```
 
 2. **Navigate to the project directory:**
